@@ -1,0 +1,5 @@
+tests/*
+k9s/*
+requirements-dev.txt
+setup*
+.gitignore

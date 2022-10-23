@@ -1,0 +1,80 @@
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: service-c
+  labels:
+    app: service-c
+    service: service-c
+spec:
+  ports:
+  - port: 5000
+    name: http
+  selector:
+    app: service-c
+---
+apiVersion: v1
+kind: ServiceAccount
+metadata:
+  name: service-c
+  labels:
+    account: service-c
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: service-c-v1
+  labels:
+    app: service-c
+    version: v1
+spec:
+  selector:
+    matchLabels:
+      app: service-c
+      version: v1
+  replicas: 1
+  template:
+    metadata:
+      labels:
+        app: service-c
+        version: v1
+    spec:
+      serviceAccountName: service-c
+      containers:
+      - name: service-c-v1
+        image: anevigat/python-rest:latest
+        imagePullPolicy: Always
+        ports:
+          - containerPort: 5000
+        securityContext:
+          runAsUser: 1000
+        resources:
+          limits:
+            cpu: 500m
+            memory: 128Mi
+          requests:
+            cpu: 10m
+            memory: 32Mi
+        env:
+          - name: APP_NAME
+            value: "service-c"
+          - name: VERSION
+            value: "v1"
+          - name: CONNECT_URL
+            value: "http://service-a.test.svc.cluster.local:5000/"
+          - name: NODE
+            valueFrom:
+              fieldRef:
+                fieldPath: spec.nodeName
+          - name: POD
+            valueFrom:
+              fieldRef:
+                fieldPath: metadata.name
+          - name: NAMESPACE
+            valueFrom:
+              fieldRef:
+                fieldPath: metadata.namespace
+          - name: MY_POD_IP
+            valueFrom:
+              fieldRef:
+                fieldPath: status.podIP
