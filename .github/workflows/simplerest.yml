@@ -1,0 +1,103 @@
+name: Test and Push REST App Docker image
+
+on:
+  push:
+    branches:
+      - 'main'
+  pull_request:
+    branches:
+      - 'main'
+  workflow_dispatch:
+    inputs:
+      tox-test:
+        type: boolean
+        description: Run Tox tests
+        required: false
+      image-test:
+        type: boolean
+        description: Run docker image tests
+        required: false
+      image-push:
+        type: boolean
+        description: Build and push image
+        required: false
+
+env:
+  APPNAME: simplerest
+
+jobs:
+  tox:
+    name: Run Tox
+    if: github.event.inputs.tox-test == 'True' || github.event_name == 'pull_request'
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    strategy:
+      matrix:
+        python-version: ['3.10']
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v3
+
+      - name: Install tox
+        run: pip install tox
+
+      - name: Run tox
+        run: tox
+
+  docker-test:
+    name: Test docker image
+    if: github.event.inputs.image-test == 'True' || github.event_name == 'pull_request'
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v3
+
+      - name: Build image
+        run: docker build -t image-test .
+
+      - name: Run Trivy vulnerability scanner
+        uses: aquasecurity/trivy-action@master
+        with:
+          image-ref: 'image-test'
+          format: 'table'
+          # exit-code: '1'
+          vuln-type: 'os,library'
+          severity: 'CRITICAL,HIGH'
+
+  docker-push:
+    name: Push docker image to Docker Hub
+    if: github.event.inputs.image-push == 'True' || github.event_name != 'pull_request'
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+
+    steps:
+    - name: Checkout
+      uses: actions/checkout@v3
+
+    - name: Extract branch and tag
+      run: |
+        echo "commit_hash=$(git rev-parse --short HEAD)" >> $GITHUB_ENV
+
+    - name: Set up QEMU
+      uses: docker/setup-qemu-action@v1
+
+    - name: Set up Docker Buildx
+      uses: docker/setup-buildx-action@v1
+
+    - name: Login to DockerHub
+      uses: docker/login-action@v1
+      with:
+        username: ${{ secrets.DOCKERHUB_USERNAME }}
+        password: ${{ secrets.DOCKERHUB_TOKEN }}
+
+    - name: Build and push
+      uses: docker/build-push-action@v3
+      with:
+        push: true
+        platforms: linux/amd64,linux/arm64
+        tags: |
+          ${{ secrets.DOCKERHUB_USERNAME }}/${{ env.APPNAME }}:latest
+          ${{ secrets.DOCKERHUB_USERNAME }}/${{ env.APPNAME }}:${{ env.commit_hash }}
