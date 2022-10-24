@@ -11,6 +11,7 @@ The goal of this app is to test connections between different services running o
 - Add Cillium tests and How to
 
 ## CI/CD
+![Tests and Builds](https://github.com/anevigat/simplerest/actions/workflows/simplerest.yml/badge.svg)
 - On pull request: Tox testing (flake8,pylint,isort,pydocstyle,coverage) will run
 - On pull request: A vulnerability scan will be perfomed on the created image.
 - On push to main: A Docker image will be pushed automatically to Docker Hub: https://hub.docker.com/r/anevigat/simplerest

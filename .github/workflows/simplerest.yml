@@ -1,4 +1,4 @@
-name: Test and Push REST App Docker image
+name: Test and Push simple App
 
 on:
   push:
