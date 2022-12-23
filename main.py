@@ -37,7 +37,7 @@ def connect():
     response['action'] = f"Connecting from {INFO['app_name']} to {INFO['connect_url']}"
     try:
         request = requests.get(url=INFO['connect_url'], timeout=REQUEST_TIMEOUT)
-        response['response'] = str(request.content)
+        response['response'] = request.text
         response['code'] = request.status_code
     except requests.exceptions.ConnectionError as exc:
         response['error'] = str(exc.args[0].reason)
