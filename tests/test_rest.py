@@ -33,7 +33,7 @@ class TestCalc(unittest.TestCase):
             'node': os.environ.get('NODE'),
             'connect_url': os.environ.get('CONNECT_URL')
         }
-        self.assertEqual(str.encode(json.dumps(expected)), response.get_data())
+        self.assertDictEqual(expected, json.loads(response.get_data()))
 
     def test_should_return_200_when_external_conn(self):
         """Test for testing /connect route"""
