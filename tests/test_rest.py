@@ -40,7 +40,3 @@ class TestCalc(unittest.TestCase):
         url = '/connect'
         response = self.client.get(url)
         self.assertEqual(200, response.status_code)
-
-
-if __name__ == '__main__':
-    unittest.main()
