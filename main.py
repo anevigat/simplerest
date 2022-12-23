@@ -5,7 +5,10 @@ import os
 import requests
 from flask import Flask
 
+REQUEST_TIMEOUT = 20
+
 app = Flask(__name__)
+
 
 def get_env():
     """Construct dictionary with Environmental Variables."""
@@ -18,7 +21,9 @@ def get_env():
     info['connect_url'] = os.getenv('CONNECT_URL')
     return info
 
+
 def configure_routes(app, info):
+    # pylint: disable=redefined-outer-name
     """Create router."""
     @app.route("/")
     def hello_world():
@@ -33,14 +38,16 @@ def configure_routes(app, info):
         response = {}
         response['action'] = f"Connecting from {info['app_name']} to {info['connect_url']}"
         try:
-            r = requests.get(url = info['connect_url'])
-            response['response'] = str(r.content)
-            response['code'] = r.status_code
-        except requests.exceptions.ConnectionError as e:
-            response['error'] = str(e.args[0].reason)
+            request = requests.get(url=info['connect_url'], timeout=REQUEST_TIMEOUT)
+            response['response'] = str(request.content)
+            response['code'] = request.status_code
+        except requests.exceptions.ConnectionError as exc:
+            response['error'] = str(exc.args[0].reason)
         return json.dumps(response)
 
+
 configure_routes(app, get_env())
+
 
 if __name__ == '__main__':
     app.run()
