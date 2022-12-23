@@ -4,6 +4,8 @@ import os
 import unittest
 from http import HTTPStatus
 
+import responses
+
 from main import app
 
 
@@ -36,8 +38,14 @@ class TestCalc(unittest.TestCase):
         }
         self.assertDictEqual(expected, json.loads(response.get_data()))
 
-    def test_should_return_200_when_external_conn(self):
+    @responses.activate
+    def test_check_external_connection(self):
         """Test for testing /connect route"""
+        # Mock
+        responses.add(
+            responses.GET,
+            url=os.environ.get('CONNECT_URL'),
+        )
         url = '/connect'
         response = self.client.get(url)
         self.assertEqual(HTTPStatus.OK, response.status_code)
