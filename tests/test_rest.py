@@ -2,6 +2,7 @@
 import json
 import os
 import unittest
+from http import HTTPStatus
 
 from main import app
 
@@ -39,4 +40,4 @@ class TestCalc(unittest.TestCase):
         """Test for testing /connect route"""
         url = '/connect'
         response = self.client.get(url)
-        self.assertEqual(200, response.status_code)
+        self.assertEqual(HTTPStatus.OK, response.status_code)
