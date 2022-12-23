@@ -1,5 +1,4 @@
 """Simple REST API to test service mesh functionality."""
-import json
 import os
 
 import requests
@@ -27,7 +26,7 @@ def hello_world():
 @app.route("/info")
 def get_info():
     """Info route."""
-    return json.dumps(INFO)
+    return INFO
 
 
 @app.route("/connect")
@@ -41,7 +40,7 @@ def connect():
         response['code'] = request.status_code
     except requests.exceptions.ConnectionError as exc:
         response['error'] = str(exc.args[0].reason)
-    return json.dumps(response)
+    return response
 
 
 if __name__ == '__main__':
